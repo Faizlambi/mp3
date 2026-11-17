@@ -96,23 +96,29 @@ body{background:#0f0f12;color:#fff;overflow:hidden;height:100dvh;display:flex;fl
 
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
-let songs=[],idx=-1,isPlaying=false,videoShown=false,ytPlayer=null,ytReady=false;
-function onYouTubeIframeAPIReady(){ ytReady=true; }
+let songs=[],idx=-1,isPlaying=false,ytPlayer=null,ytReady=false,currentVideoId='';
+function onYouTubeIframeAPIReady(){ ytReady=true; console.log('YT SIAP'); }
 
-// INI KUNCINYA BIAR ADA SUARA - BIKIN PLAYER LEWAT API, BUKAN IFRAME BIASA
-function makePlayer(query){
-  if(ytPlayer){ ytPlayer.loadPlaylist({list:query,listType:'search'}); ytPlayer.playVideo(); return; }
-  ytPlayer = new YT.Player('ytFrame', {
-    height:'210', width:'100%',
-    playerVars:{ listType:'search', list:query, autoplay:1, rel:0, mute:0 },
-    events:{
-      onReady:(e)=>{ e.target.unMute(); e.target.setVolume(100); e.target.playVideo(); },
-      onStateChange:(e)=>{ if(e.data==0) next(); } // kalo abis, auto next
-    }
-  });
+async function getVideoId(judul, artis){
+  // Cari ID video YouTube lewat API gratis, tanpa API Key
+  let q = judul + ' ' + artis + ' official';
+  try{
+    // Coba Piped API 1
+    let r = await fetch('https://piped.video/api/search?q='+encodeURIComponent(q)+'&filter=videos');
+    let d = await r.json();
+    if(d && d[0] && d[0].url) return d[0].url.split('v=')[1].split('&')[0];
+  }catch(e){}
+  try{
+    // Coba Piped API 2 - cadangan
+    let r2 = await fetch('https://inv.nadeko.net/api/v1/search?q='+encodeURIComponent(q)+'&type=video');
+    let d2 = await r2.json();
+    if(d2 && d2[0] && d2[0].videoId) return d2[0].videoId;
+  }catch(e){}
+  return null;
 }
 
 function setTab(el,q){ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); cari(q); }
+
 async function cari(kata){
  let q=kata||document.getElementById('q').value||'Mahalini';
  document.getElementById('q').value=q;
@@ -126,40 +132,58 @@ async function cari(kata){
     h+=`<div class="song" id="song-${i}" onclick="play(${i})"><div class="song-num">${i+1}</div><img src="${s.artworkUrl100.replace('100x100','300x300')}"><div class="song-info"><b>${s.trackName}</b><small>${s.artistName}</small></div><div class="eq"><i style="height:8px"></i><i style="height:14px"></i><i style="height:6px"></i></div><div class="dur">FULL<br>⋮</div></div>`;
   });
   document.getElementById('list').innerHTML=h;
-  document.getElementById('listTitle').innerText='🎵 '+q+' - '+songs.length+' Lagu • KLIK LAGU = BUNYI';
+  document.getElementById('listTitle').innerText='🎵 '+q+' - '+songs.length+' Lagu • KLIK = BUNYI';
  }catch(e){ document.getElementById('list').innerHTML='<p style="padding:20px;text-align:center">Internet mati, klik CARI lagi</p>'; }
 }
-function play(i){
+
+async function play(i){
  idx=i; let s=songs[i]; if(!s) return;
  document.querySelectorAll('.song').forEach(el=>el.classList.remove('playing'));
  let el=document.getElementById('song-'+i); if(el) el.classList.add('playing');
  document.getElementById('pImg').src=s.artworkUrl100.replace('100x100','300x300');
  document.getElementById('pTitle').innerText=s.trackName;
  document.getElementById('pArtist').innerText=s.artistName;
- document.getElementById('pStatus').innerText='● LAGI MUTER FULL • KLIK SPEAKER KALO GA BUNYI';
+ document.getElementById('pStatus').innerText='⏳ LAGI NYARI VIDEO YOUTUBE...';
  document.getElementById('pTop').classList.add('playing');
  document.getElementById('listCount').innerText='Memutar: '+(i+1)+' / '+songs.length;
- let query=s.trackName+' '+s.artistName+' official audio';
- // Munculin video dulu biar lu bisa klik UNMUTE
  document.getElementById('ytWrap').classList.add('show');
- videoShown=true;
- // Kalo API belum siap, tunggu dikit
- if(!ytReady){ setTimeout(()=>play(i),800); return; }
- makePlayer(query);
+
+ // 1. Cari Video ID-nya dulu
+ let vid = await getVideoId(s.trackName, s.artistName);
+ if(!vid){
+   document.getElementById('pStatus').innerText='❌ Video ga ketemu, klik lagu lain';
+   return;
+ }
+ currentVideoId = vid;
+ document.getElementById('pStatus').innerText='● LAGI MUTER FULL • ID: '+vid;
+
+ // 2. Puter pake Video ID langsung - INI YANG ADA SUARANYA
+ if(ytPlayer){
+   ytPlayer.loadVideoById(vid);
+ } else {
+   ytPlayer = new YT.Player('ytFrame', {
+     height:'210', width:'100%',
+     videoId: vid,
+     playerVars:{ autoplay:1, rel:0, playsinline:1 },
+     events:{
+       onReady:(e)=>{ e.target.unMute(); e.target.setVolume(100); e.target.playVideo(); },
+       onStateChange:(e)=>{ if(e.data==0) next(); }
+     }
+   });
+ }
  isPlaying=true; document.getElementById('playBtn').innerText='⏸';
- startProgress();
 }
-function startProgress(){ clearInterval(window.progTimer); let prog=0; window.progTimer=setInterval(()=>{ prog+=0.3; if(prog>100) prog=0; document.getElementById('progBar').style.width=prog+'%'; },500); }
+
 function togglePlay(){
  if(idx===-1) return play(0);
  if(!ytPlayer) return;
- if(isPlaying){ ytPlayer.pauseVideo(); document.getElementById('playBtn').innerText='▶'; document.getElementById('pTop').classList.remove('playing'); isPlaying=false; }
- else{ ytPlayer.unMute(); ytPlayer.setVolume(100); ytPlayer.playVideo(); document.getElementById('playBtn').innerText='⏸'; document.getElementById('pTop').classList.add('playing'); isPlaying=true; }
+ if(isPlaying){ ytPlayer.pauseVideo(); document.getElementById('playBtn').innerText='▶'; isPlaying=false; }
+ else{ ytPlayer.unMute(); ytPlayer.setVolume(100); ytPlayer.playVideo(); document.getElementById('playBtn').innerText='⏸'; isPlaying=true; }
 }
-function toggleVideo(){ videoShown=!videoShown; document.getElementById('ytWrap').classList.toggle('show',videoShown); }
+function toggleVideo(){ let w=document.getElementById('ytWrap'); w.classList.toggle('show'); }
 function toggleLike(el){ el.innerText=el.innerText==='♡'?'❤️':'♡'; }
 function toggleMode(){ let b=document.getElementById('modeBtn'); b.innerText=b.innerText==='🔀'?'🔁':'🔀'; }
 function next(){ if(idx<songs.length-1) play(idx+1); else play(0); }
 function prev(){ if(idx>0) play(idx-1); }
-cari('Mahalini');
+cari('Greenday');
 </script>
