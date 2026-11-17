@@ -94,8 +94,24 @@ body{background:#0f0f12;color:#fff;overflow:hidden;height:100dvh;display:flex;fl
 <button class="yt-btn" onclick="toggleVideo()">▶ LIAT VIDEO / SEMBUNYIKAN VIDEO</button>
 </div>
 
+<script src="https://www.youtube.com/iframe_api"></script>
 <script>
-let songs=[],idx=-1,isPlaying=false,videoShown=false,like=false,prog=0,progTimer=null;
+let songs=[],idx=-1,isPlaying=false,videoShown=false,ytPlayer=null,ytReady=false;
+function onYouTubeIframeAPIReady(){ ytReady=true; }
+
+// INI KUNCINYA BIAR ADA SUARA - BIKIN PLAYER LEWAT API, BUKAN IFRAME BIASA
+function makePlayer(query){
+  if(ytPlayer){ ytPlayer.loadPlaylist({list:query,listType:'search'}); ytPlayer.playVideo(); return; }
+  ytPlayer = new YT.Player('ytFrame', {
+    height:'210', width:'100%',
+    playerVars:{ listType:'search', list:query, autoplay:1, rel:0, mute:0 },
+    events:{
+      onReady:(e)=>{ e.target.unMute(); e.target.setVolume(100); e.target.playVideo(); },
+      onStateChange:(e)=>{ if(e.data==0) next(); } // kalo abis, auto next
+    }
+  });
+}
+
 function setTab(el,q){ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); cari(q); }
 async function cari(kata){
  let q=kata||document.getElementById('q').value||'Mahalini';
@@ -107,12 +123,11 @@ async function cari(kata){
   let d=await r.json(); songs=d.results;
   let h='';
   songs.forEach((s,i)=>{
-    let dur=Math.floor(Math.random()*2+2)+':'+String(Math.floor(Math.random()*59)).padStart(2,'0');
-    h+=`<div class="song" id="song-${i}" onclick="play(${i})"><div class="song-num">${i+1}</div><img src="${s.artworkUrl100.replace('100x100','300x300')}"><div class="song-info"><b>${s.trackName}</b><small>${s.artistName} • ${s.collectionName||'Single'}</small></div><div class="eq"><i style="height:8px"></i><i style="height:14px"></i><i style="height:6px"></i></div><div class="dur">${dur}<br>⋮</div></div>`;
+    h+=`<div class="song" id="song-${i}" onclick="play(${i})"><div class="song-num">${i+1}</div><img src="${s.artworkUrl100.replace('100x100','300x300')}"><div class="song-info"><b>${s.trackName}</b><small>${s.artistName}</small></div><div class="eq"><i style="height:8px"></i><i style="height:14px"></i><i style="height:6px"></i></div><div class="dur">FULL<br>⋮</div></div>`;
   });
-  document.getElementById('list').innerHTML=h||'<p style="padding:20px;text-align:center">Ga ketemu, coba kata lain</p>';
-  document.getElementById('listTitle').innerText='🎵 '+q+' - '+songs.length+' Lagu • FULL via YouTube';
- }catch(e){ document.getElementById('list').innerHTML='<p style="padding:20px;text-align:center">Internet lu mati, klik CARI lagi</p>'; }
+  document.getElementById('list').innerHTML=h;
+  document.getElementById('listTitle').innerText='🎵 '+q+' - '+songs.length+' Lagu • KLIK LAGU = BUNYI';
+ }catch(e){ document.getElementById('list').innerHTML='<p style="padding:20px;text-align:center">Internet mati, klik CARI lagi</p>'; }
 }
 function play(i){
  idx=i; let s=songs[i]; if(!s) return;
@@ -120,29 +135,31 @@ function play(i){
  let el=document.getElementById('song-'+i); if(el) el.classList.add('playing');
  document.getElementById('pImg').src=s.artworkUrl100.replace('100x100','300x300');
  document.getElementById('pTitle').innerText=s.trackName;
- document.getElementById('pArtist').innerText=s.artistName+' • '+ (s.collectionName||'');
- document.getElementById('pStatus').innerText='● LAGI MUTER FULL • '+s.artistName;
+ document.getElementById('pArtist').innerText=s.artistName;
+ document.getElementById('pStatus').innerText='● LAGI MUTER FULL • KLIK SPEAKER KALO GA BUNYI';
  document.getElementById('pTop').classList.add('playing');
  document.getElementById('listCount').innerText='Memutar: '+(i+1)+' / '+songs.length;
- // KUNCI FULL LAGU: YOUTUBE SEARCH
- let query=encodeURIComponent(s.trackName+' '+s.artistName+' official audio');
- document.getElementById('ytFrame').src='https://www.youtube.com/embed?listType=search&list='+query+'&autoplay=1&rel=0';
+ let query=s.trackName+' '+s.artistName+' official audio';
+ // Munculin video dulu biar lu bisa klik UNMUTE
+ document.getElementById('ytWrap').classList.add('show');
+ videoShown=true;
+ // Kalo API belum siap, tunggu dikit
+ if(!ytReady){ setTimeout(()=>play(i),800); return; }
+ makePlayer(query);
  isPlaying=true; document.getElementById('playBtn').innerText='⏸';
  startProgress();
- document.getElementById('list').scrollTop=0;
 }
-function startProgress(){ clearInterval(progTimer); prog=0; progTimer=setInterval(()=>{ prog+=0.3; if(prog>100) prog=0; document.getElementById('progBar').style.width=prog+'%'; let sec=Math.floor(prog*2.2); document.getElementById('cur').innerText=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'); },500); }
+function startProgress(){ clearInterval(window.progTimer); let prog=0; window.progTimer=setInterval(()=>{ prog+=0.3; if(prog>100) prog=0; document.getElementById('progBar').style.width=prog+'%'; },500); }
 function togglePlay(){
- let f=document.getElementById('ytFrame');
  if(idx===-1) return play(0);
- if(isPlaying){ f.src=f.src.replace('autoplay=1','autoplay=0'); document.getElementById('playBtn').innerText='▶'; document.getElementById('pTop').classList.remove('playing'); document.getElementById('pStatus').innerText='⏸ DIJEDA'; isPlaying=false; clearInterval(progTimer); }
- else{ f.src=f.src.replace('autoplay=0','autoplay=1'); document.getElementById('playBtn').innerText='⏸'; document.getElementById('pTop').classList.add('playing'); document.getElementById('pStatus').innerText='● LAGI MUTER FULL'; isPlaying=true; startProgress(); }
+ if(!ytPlayer) return;
+ if(isPlaying){ ytPlayer.pauseVideo(); document.getElementById('playBtn').innerText='▶'; document.getElementById('pTop').classList.remove('playing'); isPlaying=false; }
+ else{ ytPlayer.unMute(); ytPlayer.setVolume(100); ytPlayer.playVideo(); document.getElementById('playBtn').innerText='⏸'; document.getElementById('pTop').classList.add('playing'); isPlaying=true; }
 }
 function toggleVideo(){ videoShown=!videoShown; document.getElementById('ytWrap').classList.toggle('show',videoShown); }
-function toggleLike(el){ like=!like; el.innerText=like?'❤️':'♡'; el.style.color=like?'#ff2d55':'#fff'; }
+function toggleLike(el){ el.innerText=el.innerText==='♡'?'❤️':'♡'; }
 function toggleMode(){ let b=document.getElementById('modeBtn'); b.innerText=b.innerText==='🔀'?'🔁':'🔀'; }
 function next(){ if(idx<songs.length-1) play(idx+1); else play(0); }
 function prev(){ if(idx>0) play(idx-1); }
 cari('Mahalini');
 </script>
-</body></html>
