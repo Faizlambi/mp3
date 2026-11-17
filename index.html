@@ -1,189 +1,129 @@
 <!DOCTYPE html>
-<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>MusikKu - TTPod Style</title>
-<meta name="theme-color" content="#e91e63">
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MusikKu - TTPod Cantik</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;-webkit-tap-highlight-color:transparent}
-body{background:#0f0f12;color:#fff;overflow:hidden;height:100dvh;display:flex;flex-direction:column}
-/* HEADER TTPOD */
-.header{background:linear-gradient(180deg,#ff2d55,#c2185b);padding:14px 15px 10px;box-shadow:0 4px 15px rgba(0,0,0,.4)}
-.header-top{display:flex;justify-content:space-between;align-items:center}
-.logo{font-size:22px;font-weight:900;letter-spacing:.5px}.logo span{font-size:11px;background:#fff;color:#e91e63;padding:2px 6px;border-radius:10px;margin-left:5px;vertical-align:middle}
-.search-bar{margin-top:12px;background:rgba(255,255,255,.22);border-radius:30px;display:flex;align-items:center;padding:9px 14px;gap:8px}
-.search-bar input{flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:14px}
-.search-bar input::placeholder{color:rgba(255,255,255,.8)}
-.search-bar button{background:#fff;color:#e91e63;border:none;padding:6px 14px;border-radius:20px;font-weight:800;font-size:12px}
-.tabs{display:flex;gap:5px;margin-top:12px}
-.tab{flex:1;text-align:center;padding:9px 0;font-size:13px;font-weight:700;color:rgba(255,255,255,.7);border-radius:20px;cursor:pointer}
-.tab.active{background:#fff;color:#e91e63}
-/* LIST LAGU TTPOD */
-.list{flex:1;overflow-y:auto;padding:5px 0 20px}
-.list-head{padding:10px 15px;font-size:12px;color:#aaa;display:flex;justify-content:space-between}
-.song{display:flex;align-items:center;gap:12px;padding:10px 15px;cursor:pointer;border-bottom:1px solid #1e1e22}
-.song:active{background:#1e1e22}.song.playing{background:#2a1220;border-left:4px solid #ff2d55}
-.song-num{width:28px;text-align:center;font-size:13px;color:#888;font-weight:700}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif}
+body{background:#0a0a0f;color:#fff;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+.header{background:linear-gradient(135deg,#ff2d55 0%,#ff6b35 50%,#ff2d55 100%);padding:16px 16px 12px;border-radius:0 0 22px 22px;box-shadow:0 8px 30px rgba(255,45,85,.4)}
+.top{display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:24px;font-weight:900;letter-spacing:1px}.logo i{font-style:normal;background:#fff;color:#ff2d55;padding:2px 8px;border-radius:20px;font-size:11px;margin-left:6px;vertical-align:middle}
+.search{margin-top:14px;background:rgba(255,255,255,.95);border-radius:30px;display:flex;align-items:center;padding:4px 4px 4px 16px}
+.search input{flex:1;border:none;outline:none;font-size:14px;color:#000;background:transparent}
+.search button{background:#ff2d55;color:#fff;border:none;padding:10px 18px;border-radius:25px;font-weight:800;cursor:pointer}
+.tabs{display:flex;gap:8px;margin-top:12px;overflow-x:auto;padding-bottom:2px}
+.chip{white-space:nowrap;background:rgba(255,255,255,.2);padding:8px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid rgba(255,255,255,.3)}
+.chip.active{background:#fff;color:#ff2d55}
+.list{flex:1;overflow-y:auto;padding:12px 12px 10px}
+.list-title{font-size:13px;color:#aaa;padding:4px 4px 10px;display:flex;justify-content:space-between}
+.song{display:flex;align-items:center;gap:12px;background:#16161c;padding:10px;border-radius:14px;margin-bottom:8px;cursor:pointer;border:1px solid #222}
+.song.playing{background:linear-gradient(90deg,#2a0f1e,#1a1a1e);border-color:#ff2d55}
+.song img{width:54px;height:54px;border-radius:12px;object-fit:cover}
+.song-info{flex:1;min-width:0}.song-info b{font-size:14px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.song-info small{color:#aaa;font-size:12px}
+.song-num{width:24px;text-align:center;font-weight:900;color:#666;font-size:13px}
 .song.playing .song-num{color:#ff2d55}
-.song img{width:48px;height:48px;border-radius:8px;object-fit:cover}
-.song-info{flex:1;min-width:0}
-.song-info b{font-size:14px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.song-info small{color:#aaa;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
-.eq{display:flex;gap:2px;align-items:flex-end;height:18px;width:22px}
-.eq i{display:block;width:4px;background:#ff2d55;border-radius:2px}
-.song.playing .eq i{animation:eq .5s infinite alternate}
-.song.playing .eq i:nth-child(2){animation-delay:.15s}.song.playing .eq i:nth-child(3){animation-delay:.3s}
+.eq{display:flex;gap:2px;align-items:flex-end;height:18px;width:20px}.eq i{width:4px;background:#ff2d55;border-radius:2px;display:block}
+.song.playing .eq i{animation:eq .5s infinite alternate}.song.playing .eq i:nth-child(2){animation-delay:.15s}.song.playing .eq i:nth-child(3){animation-delay:.3s}
 @keyframes eq{from{height:4px}to{height:18px}}
-.dur{font-size:11px;color:#888}
-/* YOUTUBE PLAYER - SEMBUNYI TAPI MUTER FULL */
-#ytWrap{background:#000}
-#ytWrap iframe{width:100%;height:0;border:none;transition:.3s}
-#ytWrap.show iframe{height:210px}
-/* PLAYER BAWAH TTPOD */
-.player{background:#1a1a1e;border-top:1px solid #2a2a2e;padding:10px 12px 12px}
-.player-top{display:flex;align-items:center;gap:12px}
-.player-top img{width:52px;height:52px;border-radius:50%;object-fit:cover;animation:spin 8s linear infinite;animation-play-state:paused}
-.player-top.playing img{animation-play-state:running;border:2px solid #ff2d55}
+.player{background:#15151b;border-top:1px solid #222;padding:12px 14px 14px;border-radius:22px 22px 0 0}
+.p-top{display:flex;align-items:center;gap:12px}
+.p-top img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid #ff2d55}
+.p-top.playing img{animation:spin 6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.p-info{flex:1;min-width:0}.p-info b{font-size:14px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.p-info small{color:#ff2d55;font-size:11px;font-weight:700}
-.p-info span{font-size:11px;color:#aaa}
-.controls{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
-.controls button{background:none;border:none;color:#fff;font-size:22px;cursor:pointer}
-.controls .play-big{width:52px;height:52px;border-radius:50%;background:#ff2d55;font-size:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 5px 15px rgba(255,45,85,.5)}
-.progress{margin-top:10px;display:flex;align-items:center;gap:8px;font-size:11px;color:#aaa}
-.progress-bar{flex:1;height:4px;background:#333;border-radius:10px;overflow:hidden}
-.progress-bar i{display:block;height:100%;background:#ff2d55;width:0%}
-.yt-btn{width:100%;background:#ff0000;color:#fff;border:none;padding:8px;border-radius:20px;font-weight:800;font-size:12px;margin-top:8px;cursor:pointer}
+.p-info{flex:1;min-width:0}.p-info b{font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.p-info small{color:#ff6b9d;font-size:11px;font-weight:800}.p-info span{color:#aaa;font-size:12px}
+.controls{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding:0 10px}
+.controls button{background:none;border:none;color:#fff;font-size:24px;cursor:pointer}
+.play-big{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#ff2d55,#ff6b35);font-size:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(255,45,85,.5)}
+.bar{margin-top:12px;display:flex;align-items:center;gap:8px;font-size:11px;color:#aaa}
+.bar-track{flex:1;height:5px;background:#333;border-radius:10px;overflow:hidden}
+.bar-track i{display:block;height:100%;background:linear-gradient(90deg,#ff2d55,#ff6b35);width:0%}
+.vol{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:#aaa}
+.vol input{flex:1;accent-color:#ff2d55}
 </style></head><body>
 
-<!-- HEADER -->
 <div class="header">
-<div class="header-top"><div class="logo">TTPod<span>FULL</span></div><div style="font-size:20px">⚙️ ⋮</div></div>
-<div class="search-bar">🔍 <input id="q" placeholder="Cari lagu, artis... (FULL LAGU)" value="Mahalini" onkeyup="if(event.key==='Enter')cari()"><button onclick="cari()">CARI</button></div>
+<div class="top"><div class="logo">MusikKu <i>TTPod • BUNYI</i></div><div>🔔 ⚙️</div></div>
+<div class="search"><span>🔍</span><input id="q" placeholder="Cari lagu yang pasti bunyi..." value="Mahalini" onkeyup="if(event.key==='Enter')cari()"><button onclick="cari()">CARI</button></div>
 <div class="tabs">
-<div class="tab active" onclick="setTab(this,'Mahalini')">🔥 Trending</div>
-<div class="tab" onclick="setTab(this,'Top Hits Indonesia 2026')">🏆 Top Hits</div>
-<div class="tab" onclick="setTab(this,'Galau')">💔 Galau</div>
-<div class="tab" onclick="setTab(this,'Dangdut')">🎤 Dangdut</div>
+<div class="chip active" onclick="setTab(this,'Mahalini')">🔥 Mahalini</div>
+<div class="chip" onclick="setTab(this,'Bernadya')">💔 Bernadya</div>
+<div class="chip" onclick="setTab(this,'Hindia')">🎸 Hindia</div>
+<div class="chip" onclick="setTab(this,'Juicy Luicy')">🎤 Juicy Luicy</div>
+<div class="chip" onclick="setTab(this,'Nadin Amizah')">✨ Nadin</div>
+<div class="chip" onclick="setTab(this,'Rizky Febian')">🎵 Rizky Febian</div>
 </div>
 </div>
 
-<!-- LIST -->
 <div class="list">
-<div class="list-head"><span id="listTitle">🎵 Mahalini - 24 Lagu • FULL via YouTube</span><span id="listCount">Memutar: -</span></div>
-<div id="list"><p style="padding:20px;text-align:center;color:#aaa">Lagi loading lagu...</p></div>
-<div style="padding:15px;text-align:center;color:#666;font-size:11px">MusikKu TTPod • Full Song via YouTube • Gratis tanpa login</div>
+<div class="list-title"><span id="listTitle">Lagi loading...</span><span id="listCount"></span></div>
+<div id="list"></div>
+<div style="text-align:center;color:#555;font-size:11px;padding:15px">MusikKu TTPod V2 • MP3 Langsung • Pasti Bunyi • Tanpa Video Jelek</div>
 </div>
 
-<!-- YOUTUBE - TEMPAT LAGU FULL MUTER -->
-<div id="ytWrap"><div id="ytFrame"></div><p style="padding:8px;text-align:center;font-size:12px;color:#fff;background:#000">🔊 Volume HP gedein! Kalo masih bisu, klik video -> klik speaker</p></div>
-
-<!-- PLAYER -->
 <div class="player">
-<div class="player-top" id="pTop">
-<img id="pImg" src="https://via.placeholder.com/52/ff2d55/fff?text=♪">
-<div class="p-info"><b id="pTitle">Pilih Lagu Dulu</b><small id="pStatus">● SIAP • FULL SONG</small><br><span id="pArtist">MusikKu TTPod - Klik lagu di atas</span></div>
-<div style="font-size:22px" onclick="toggleLike(this)">♡</div>
-</div>
-<div class="controls">
-<button onclick="prev()">⏮</button>
-<button onclick="toggleMode()" id="modeBtn" title="Mode">🔀</button>
-<button class="play-big" id="playBtn" onclick="togglePlay()">▶</button>
-<button onclick="next()">⏭</button>
-<button onclick="toggleVideo()">📺</button>
-</div>
-<div class="progress"><span id="cur">00:00</span><div class="progress-bar"><i id="progBar"></i></div><span>FULL</span></div>
-<button class="yt-btn" onclick="toggleVideo()">▶ LIAT VIDEO / SEMBUNYIKAN VIDEO</button>
+<div class="p-top" id="pTop"><img id="pImg" src="https://via.placeholder.com/56/ff2d55/fff?text=♪"><div class="p-info"><b id="pTitle">Pilih lagu, langsung bunyi!</b><small id="pStatus">● SIAP - KLIK LAGU DI ATAS</small><br><span id="pArtist">MusikKu - Tanpa YouTube, Tanpa Bisu</span></div><div style="font-size:24px" onclick="toggleLike(this)">♡</div></div>
+<div class="controls"><button onclick="prev()">⏮</button><button onclick="toggleShuffle()" id="shuffleBtn">🔀</button><button class="play-big" id="playBtn" onclick="togglePlay()">▶</button><button onclick="toggleRepeat()" id="repeatBtn">🔁</button><button onclick="next()">⏭</button></div>
+<div class="bar"><span id="cur">00:00</span><div class="bar-track"><i id="progBar"></i></div><span id="dur">00:00</span></div>
+<div class="vol"><span>🔈</span><input type="range" id="vol" min="0" max="100" value="100" oninput="setVol(this.value)"><span>🔊</span><span id="volVal">100%</span></div>
 </div>
 
-<script src="https://www.youtube.com/iframe_api"></script>
+<audio id="audio" preload="auto"></audio>
+
 <script>
-let songs=[],idx=-1,isPlaying=false,ytPlayer=null,ytReady=false,currentVideoId='';
-function onYouTubeIframeAPIReady(){ ytReady=true; console.log('YT SIAP'); }
-
-async function getVideoId(judul, artis){
-  // Cari ID video YouTube lewat API gratis, tanpa API Key
-  let q = judul + ' ' + artis + ' official';
-  try{
-    // Coba Piped API 1
-    let r = await fetch('https://piped.video/api/search?q='+encodeURIComponent(q)+'&filter=videos');
-    let d = await r.json();
-    if(d && d[0] && d[0].url) return d[0].url.split('v=')[1].split('&')[0];
-  }catch(e){}
-  try{
-    // Coba Piped API 2 - cadangan
-    let r2 = await fetch('https://inv.nadeko.net/api/v1/search?q='+encodeURIComponent(q)+'&type=video');
-    let d2 = await r2.json();
-    if(d2 && d2[0] && d2[0].videoId) return d2[0].videoId;
-  }catch(e){}
-  return null;
-}
-
-function setTab(el,q){ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); cari(q); }
+let songs=[],idx=-1;
+let audio=document.getElementById('audio');
+function setTab(el,q){ document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); cari(q); }
+function fmt(s){ if(!s||isNaN(s)) return '00:00'; return String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0'); }
 
 async function cari(kata){
  let q=kata||document.getElementById('q').value||'Mahalini';
  document.getElementById('q').value=q;
- document.getElementById('listTitle').innerText='🎵 '+q+' - Lagi nyari...';
- document.getElementById('list').innerHTML='<p style="padding:20px;text-align:center;color:#aaa">Lagi nyari "'+q+'"...</p>';
+ document.getElementById('listTitle').innerText='🔍 Lagi nyari "'+q+'" ...';
+ document.getElementById('list').innerHTML='<p style="padding:20px;text-align:center;color:#aaa">Lagi nyari...</p>';
  try{
-  let r=await fetch('https://itunes.apple.com/search?term='+encodeURIComponent(q)+'&media=music&limit=30&country=ID');
-  let d=await r.json(); songs=d.results;
+  // PAKE AUDIUS - FULL MP3, PASTI BUNYI, BUKAN YOUTUBE
+  let r=await fetch('https://discoveryprovider.audius.co/v1/tracks/search?query='+encodeURIComponent(q)+'&limit=30');
+  let d=await r.json();
+  let tracks=d.data||[];
+  // Kalo Audius kosong, pake iTunes sebagai cadangan (30 detik tapi bunyi)
+  if(tracks.length===0){
+    let r2=await fetch('https://itunes.apple.com/search?term='+encodeURIComponent(q)+'&media=music&limit=30&country=ID');
+    let d2=await r2.json();
+    songs=d2.results.map(s=>({title:s.trackName,artist:s.artistName,img:s.artworkUrl100.replace('100x100','300x300'),url:s.previewUrl,full:false}));
+  } else {
+    songs=tracks.map(t=>({title:t.title,artist:t.user.handle||t.user.name,img:t.artwork? t.artwork['480x480'] : 'https://via.placeholder.com/300/ff2d55/fff?text=♪',url:'https://discoveryprovider.audius.co/v1/tracks/'+t.id+'/stream',full:true}));
+  }
   let h='';
-  songs.forEach((s,i)=>{
-    h+=`<div class="song" id="song-${i}" onclick="play(${i})"><div class="song-num">${i+1}</div><img src="${s.artworkUrl100.replace('100x100','300x300')}"><div class="song-info"><b>${s.trackName}</b><small>${s.artistName}</small></div><div class="eq"><i style="height:8px"></i><i style="height:14px"></i><i style="height:6px"></i></div><div class="dur">FULL<br>⋮</div></div>`;
-  });
-  document.getElementById('list').innerHTML=h;
-  document.getElementById('listTitle').innerText='🎵 '+q+' - '+songs.length+' Lagu • KLIK = BUNYI';
- }catch(e){ document.getElementById('list').innerHTML='<p style="padding:20px;text-align:center">Internet mati, klik CARI lagi</p>'; }
+  songs.forEach((s,i)=>{ h+=`<div class="song" id="song-${i}" onclick="play(${i})"><div class="song-num">${i+1}</div><img src="${s.img}"><div class="song-info"><b>${s.title}</b><small>${s.artist} • ${s.full?'FULL MP3 • PASTI BUNYI':'PREVIEW 30 detik'}</small></div><div class="eq"><i style="height:6px"></i><i style="height:12px"></i><i style="height:8px"></i></div><div>▶</div></div>`; });
+  document.getElementById('list').innerHTML=h||'<p style="padding:20px;text-align:center">Ga ketemu, coba kata lain<br><small>Coba: Mahalini, Bernadya, Hindia</small></p>';
+  document.getElementById('listTitle').innerText='🎵 '+q+' - '+songs.length+' Lagu';
+ }catch(e){ document.getElementById('list').innerHTML='<p style="padding:20px;text-align:center">Internet lu mati, klik CARI lagi</p>'; }
 }
-
-async function play(i){
+function play(i){
  idx=i; let s=songs[i]; if(!s) return;
- document.querySelectorAll('.song').forEach(el=>el.classList.remove('playing'));
+ document.querySelectorAll('.song').forEach(e=>e.classList.remove('playing'));
  let el=document.getElementById('song-'+i); if(el) el.classList.add('playing');
- document.getElementById('pImg').src=s.artworkUrl100.replace('100x100','300x300');
- document.getElementById('pTitle').innerText=s.trackName;
- document.getElementById('pArtist').innerText=s.artistName;
- document.getElementById('pStatus').innerText='⏳ LAGI NYARI VIDEO YOUTUBE...';
+ document.getElementById('pImg').src=s.img;
+ document.getElementById('pTitle').innerText=s.title;
+ document.getElementById('pArtist').innerText=s.artist+' • '+(s.full?'FULL MP3':'PREVIEW');
+ document.getElementById('pStatus').innerText='● LAGI MUTER • SUARA PASTI BUNYI 🔊';
  document.getElementById('pTop').classList.add('playing');
- document.getElementById('listCount').innerText='Memutar: '+(i+1)+' / '+songs.length;
- document.getElementById('ytWrap').classList.add('show');
-
- // 1. Cari Video ID-nya dulu
- let vid = await getVideoId(s.trackName, s.artistName);
- if(!vid){
-   document.getElementById('pStatus').innerText='❌ Video ga ketemu, klik lagu lain';
-   return;
- }
- currentVideoId = vid;
- document.getElementById('pStatus').innerText='● LAGI MUTER FULL • ID: '+vid;
-
- // 2. Puter pake Video ID langsung - INI YANG ADA SUARANYA
- if(ytPlayer){
-   ytPlayer.loadVideoById(vid);
- } else {
-   ytPlayer = new YT.Player('ytFrame', {
-     height:'210', width:'100%',
-     videoId: vid,
-     playerVars:{ autoplay:1, rel:0, playsinline:1 },
-     events:{
-       onReady:(e)=>{ e.target.unMute(); e.target.setVolume(100); e.target.playVideo(); },
-       onStateChange:(e)=>{ if(e.data==0) next(); }
-     }
-   });
- }
- isPlaying=true; document.getElementById('playBtn').innerText='⏸';
+ document.getElementById('listCount').innerText=(i+1)+' / '+songs.length;
+ audio.src=s.url; audio.volume=document.getElementById('vol').value/100; audio.play().then(()=>{ document.getElementById('playBtn').innerText='⏸'; }).catch(()=>{ document.getElementById('pStatus').innerText='⚠️ Klik tombol ▶ di bawah 1x biar bunyi'; document.getElementById('playBtn').innerText='▶'; });
 }
-
 function togglePlay(){
  if(idx===-1) return play(0);
- if(!ytPlayer) return;
- if(isPlaying){ ytPlayer.pauseVideo(); document.getElementById('playBtn').innerText='▶'; isPlaying=false; }
- else{ ytPlayer.unMute(); ytPlayer.setVolume(100); ytPlayer.playVideo(); document.getElementById('playBtn').innerText='⏸'; isPlaying=true; }
+ if(audio.paused){ audio.play(); document.getElementById('playBtn').innerText='⏸'; document.getElementById('pTop').classList.add('playing'); }
+ else{ audio.pause(); document.getElementById('playBtn').innerText='▶'; document.getElementById('pTop').classList.remove('playing'); }
 }
-function toggleVideo(){ let w=document.getElementById('ytWrap'); w.classList.toggle('show'); }
-function toggleLike(el){ el.innerText=el.innerText==='♡'?'❤️':'♡'; }
-function toggleMode(){ let b=document.getElementById('modeBtn'); b.innerText=b.innerText==='🔀'?'🔁':'🔀'; }
+function setVol(v){ audio.volume=v/100; document.getElementById('volVal').innerText=v+'%'; }
 function next(){ if(idx<songs.length-1) play(idx+1); else play(0); }
 function prev(){ if(idx>0) play(idx-1); }
-cari('Greenday');
+function toggleLike(el){ el.innerText=el.innerText==='♡'?'❤️':'♡'; }
+function toggleShuffle(){ let b=document.getElementById('shuffleBtn'); b.style.color=b.style.color==='rgb(255, 45, 85)'?'#fff':'#ff2d55'; }
+function toggleRepeat(){ let b=document.getElementById('repeatBtn'); audio.loop=!audio.loop; b.style.color=audio.loop?'#ff2d55':'#fff'; }
+audio.addEventListener('timeupdate',()=>{ if(audio.duration){ document.getElementById('progBar').style.width=(audio.currentTime/audio.duration*100)+'%'; document.getElementById('cur').innerText=fmt(audio.currentTime); document.getElementById('dur').innerText=fmt(audio.duration); } });
+audio.addEventListener('ended',()=>{ next(); });
+audio.addEventListener('error',()=>{ document.getElementById('pStatus').innerText='⚠️ Lagu ini gagal, lagi ganti ke lagu berikutnya...'; setTimeout(next,1000); });
+cari('Mahalini');
 </script>
+</body></html>
