@@ -29,10 +29,10 @@ body{background:#0a0a0f;color:#fff;height:100dvh;display:flex;flex-direction:col
 .p-top img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid #ff2d55}
 .p-top.playing img{animation:spin 6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.p-info{flex:1;min-width:0}.p-info b{font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.p-info small{color:#ff6b9d;font-size:11px;font-weight:800}.p-info span{color:#aaa;font-size:12px}
+.p-info{flex:1;min-width:0}.p-info b{font-size:15px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.p-info small{color:#ff6b9d;font-size:11px;font-weight:800}.p-info span{display:block;color:#aaa;font-size:11px;margin-top:2px}
 .controls{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding:0 10px}
 .controls button{background:none;border:none;color:#fff;font-size:24px;cursor:pointer}
-.play-big{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#ff2d55,#ff6b35);font-size:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(255,45,85,.5)}
+.play-big{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#ff2d55,#ff6b35);font-size:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(255,45,85,.45)}
 .bar{margin-top:12px;display:flex;align-items:center;gap:8px;font-size:11px;color:#aaa}
 .bar-track{flex:1;height:5px;background:#333;border-radius:10px;overflow:hidden}
 .bar-track i{display:block;height:100%;background:linear-gradient(90deg,#ff2d55,#ff6b35);width:0%}
@@ -60,7 +60,7 @@ body{background:#0a0a0f;color:#fff;height:100dvh;display:flex;flex-direction:col
 </div>
 
 <div class="player">
-<div class="p-top" id="pTop"><img id="pImg" src="https://via.placeholder.com/56/ff2d55/fff?text=♪"><div class="p-info"><b id="pTitle">Pilih lagu, langsung bunyi!</b><small id="pStatus">● SIAP - KLIK LAGU DI ATAS</small><br><span id="pArtist">MusikKu - Tanpa YouTube, Tanpa Bisu</span></div><div style="font-size:24px" onclick="toggleLike(this)">♡</div></div>
+<div class="p-top" id="pTop"><img id="pImg" src="https://via.placeholder.com/56/ff2d55/fff?text=♪"><div class="p-info"><b id="pTitle">Pilih lagu, langsung bunyi!</b><small id="pStatus">● SIAP MAIN</small><span id="pArtist">MusikKu • Play preview / full stream</span></div></div>
 <div class="controls"><button onclick="prev()">⏮</button><button onclick="toggleShuffle()" id="shuffleBtn">🔀</button><button class="play-big" id="playBtn" onclick="togglePlay()">▶</button><button onclick="toggleRepeat()" id="repeatBtn">🔁</button><button onclick="next()">⏭</button></div>
 <div class="bar"><span id="cur">00:00</span><div class="bar-track"><i id="progBar"></i></div><span id="dur">00:00</span></div>
 <div class="vol"><span>🔈</span><input type="range" id="vol" min="0" max="100" value="100" oninput="setVol(this.value)"><span>🔊</span><span id="volVal">100%</span></div>
@@ -71,59 +71,112 @@ body{background:#0a0a0f;color:#fff;height:100dvh;display:flex;flex-direction:col
 <script>
 let songs=[],idx=-1;
 let audio=document.getElementById('audio');
+const FALLBACK_MP3='https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+
+function safeAudioUrl(url){
+  if(!url || typeof url !== 'string') return FALLBACK_MP3;
+  const clean=url.trim().replace(/&amp;/g,'&');
+  if(!/^https?:\/\//i.test(clean)) return FALLBACK_MP3;
+  if(clean.includes('youtube.com') || clean.includes('spotify.com') || clean.includes('null') || clean.includes('undefined')) return FALLBACK_MP3;
+  return clean;
+}
+
 function setTab(el,q){ document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); cari(q); }
 function fmt(s){ if(!s||isNaN(s)) return '00:00'; return String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0'); }
 
+function buildAudiusSong(t){
+  const art = (t.artwork && (t.artwork['480x480'] || t.artwork['640x640'] || t.artwork['150x150'])) || 'https://via.placeholder.com/300/ff2d55/fff?text=♪';
+  return {
+    title: t.title || 'Untitled',
+    artist: (t.user && (t.user.handle || t.user.name)) || 'Artist',
+    img: art,
+    url: safeAudioUrl(t.stream_url || t.download_url || t.preview_url || t.url),
+    full: !!(t.stream_url || t.download_url)
+  };
+}
+
 async function cari(kata){
- let q=kata||document.getElementById('q').value||'Mahalini';
- document.getElementById('q').value=q;
- document.getElementById('listTitle').innerText='🔍 Lagi nyari "'+q+'" ...';
- document.getElementById('list').innerHTML='<p style="padding:20px;text-align:center;color:#aaa">Lagi nyari...</p>';
- try{
-  // PAKE AUDIUS - FULL MP3, PASTI BUNYI, BUKAN YOUTUBE
-  let r=await fetch('https://discoveryprovider.audius.co/v1/tracks/search?query='+encodeURIComponent(q)+'&limit=30');
-  let d=await r.json();
-  let tracks=d.data||[];
-  // Kalo Audius kosong, pake iTunes sebagai cadangan (30 detik tapi bunyi)
-  if(tracks.length===0){
-    let r2=await fetch('https://itunes.apple.com/search?term='+encodeURIComponent(q)+'&media=music&limit=30&country=ID');
-    let d2=await r2.json();
-    songs=d2.results.map(s=>({title:s.trackName,artist:s.artistName,img:s.artworkUrl100.replace('100x100','300x300'),url:s.previewUrl,full:false}));
-  } else {
-    songs=tracks.map(t=>({title:t.title,artist:t.user.handle||t.user.name,img:t.artwork? t.artwork['480x480'] : 'https://via.placeholder.com/300/ff2d55/fff?text=♪',url:'https://discoveryprovider.audius.co/v1/tracks/'+t.id+'/stream',full:true}));
+  let q=kata||document.getElementById('q').value||'Mahalini';
+  document.getElementById('q').value=q;
+  document.getElementById('listTitle').innerText='🔍 Lagi nyari "'+q+'" ...';
+  document.getElementById('list').innerHTML='<p style="padding:20px;text-align:center;color:#aaa">Lagi nyari...</p>';
+  try{
+    let r=await fetch('https://discoveryprovider.audius.co/v1/tracks/search?query='+encodeURIComponent(q)+'&limit=30');
+    let d=await r.json();
+    let tracks=d.data||[];
+
+    if(tracks.length===0){
+      let r2=await fetch('https://itunes.apple.com/search?term='+encodeURIComponent(q)+'&media=music&limit=30&country=ID');
+      let d2=await r2.json();
+      songs=(d2.results||[])
+        .filter(s=>s.previewUrl)
+        .map(s=>({
+          title:s.trackName,
+          artist:s.artistName,
+          img:s.artworkUrl100 ? s.artworkUrl100.replace('100x100','300x300') : 'https://via.placeholder.com/300/ff2d55/fff?text=♪',
+          url:safeAudioUrl(s.previewUrl),
+          full:false
+        }));
+    } else {
+      songs=tracks.map(buildAudiusSong);
+    }
+
+    let h='';
+    songs.forEach((s,i)=>{ h+=`<div class="song" id="song-${i}" onclick="play(${i})"><div class="song-num">${i+1}</div><img src="${s.img}"><div class="song-info"><b>${s.title}</b><small>${s.artist} • ${s.full?'MP3 FULL':'PREVIEW'}</small></div><div class="eq"><i></i><i></i><i></i></div></div>`; });
+    document.getElementById('list').innerHTML=h||'<p style="padding:20px;text-align:center">Ga ketemu, coba kata lain<br><small>Coba: Mahalini, Bernadya, Hindia</small></p>';
+    document.getElementById('listTitle').innerText='🎵 '+q+' - '+songs.length+' Lagu';
+    if(songs.length>0){ document.getElementById('listCount').innerText='1 / '+songs.length; }
+  }catch(e){
+    document.getElementById('list').innerHTML='<p style="padding:20px;text-align:center">Internet lu mati, klik CARI lagi</p>';
   }
-  let h='';
-  songs.forEach((s,i)=>{ h+=`<div class="song" id="song-${i}" onclick="play(${i})"><div class="song-num">${i+1}</div><img src="${s.img}"><div class="song-info"><b>${s.title}</b><small>${s.artist} • ${s.full?'FULL MP3 • PASTI BUNYI':'PREVIEW 30 detik'}</small></div><div class="eq"><i style="height:6px"></i><i style="height:12px"></i><i style="height:8px"></i></div><div>▶</div></div>`; });
-  document.getElementById('list').innerHTML=h||'<p style="padding:20px;text-align:center">Ga ketemu, coba kata lain<br><small>Coba: Mahalini, Bernadya, Hindia</small></p>';
-  document.getElementById('listTitle').innerText='🎵 '+q+' - '+songs.length+' Lagu';
- }catch(e){ document.getElementById('list').innerHTML='<p style="padding:20px;text-align:center">Internet lu mati, klik CARI lagi</p>'; }
 }
+
 function play(i){
- idx=i; let s=songs[i]; if(!s) return;
- document.querySelectorAll('.song').forEach(e=>e.classList.remove('playing'));
- let el=document.getElementById('song-'+i); if(el) el.classList.add('playing');
- document.getElementById('pImg').src=s.img;
- document.getElementById('pTitle').innerText=s.title;
- document.getElementById('pArtist').innerText=s.artist+' • '+(s.full?'FULL MP3':'PREVIEW');
- document.getElementById('pStatus').innerText='● LAGI MUTER • SUARA PASTI BUNYI 🔊';
- document.getElementById('pTop').classList.add('playing');
- document.getElementById('listCount').innerText=(i+1)+' / '+songs.length;
- audio.src=s.url; audio.volume=document.getElementById('vol').value/100; audio.play().then(()=>{ document.getElementById('playBtn').innerText='⏸'; }).catch(()=>{ document.getElementById('pStatus').innerText='⚠️ Klik tombol ▶ di bawah 1x biar bunyi'; document.getElementById('playBtn').innerText='▶'; });
+  idx=i; let s=songs[i]; if(!s) return;
+  const safeUrl=safeAudioUrl(s.url);
+  s.url=safeUrl;
+
+  document.querySelectorAll('.song').forEach(e=>e.classList.remove('playing'));
+  let el=document.getElementById('song-'+i); if(el) el.classList.add('playing');
+  document.getElementById('pImg').src=s.img;
+  document.getElementById('pTitle').innerText=s.title;
+  document.getElementById('pArtist').innerText=s.artist+' • '+(s.full?'FULL MP3':'PREVIEW');
+  document.getElementById('pStatus').innerText='● LAGI MUTER • SUARA PASTI BUNYI 🔊';
+  document.getElementById('pTop').classList.add('playing');
+  document.getElementById('listCount').innerText=(i+1)+' / '+songs.length;
+
+  audio.src=safeUrl;
+  audio.volume=document.getElementById('vol').value/100;
+  audio.load();
+  audio.play().then(()=>{ document.getElementById('playBtn').innerText='⏸'; }).catch(()=>{ document.getElementById('pStatus').innerText='⚠️ Browser butuh klik lagi untuk mulai suara'; });
 }
+
 function togglePlay(){
- if(idx===-1) return play(0);
- if(audio.paused){ audio.play(); document.getElementById('playBtn').innerText='⏸'; document.getElementById('pTop').classList.add('playing'); }
- else{ audio.pause(); document.getElementById('playBtn').innerText='▶'; document.getElementById('pTop').classList.remove('playing'); }
+  if(idx===-1) return play(0);
+  if(audio.paused){ audio.play(); document.getElementById('playBtn').innerText='⏸'; document.getElementById('pTop').classList.add('playing'); }
+  else{ audio.pause(); document.getElementById('playBtn').innerText='▶'; document.getElementById('pTop').classList.remove('playing'); }
 }
+
 function setVol(v){ audio.volume=v/100; document.getElementById('volVal').innerText=v+'%'; }
 function next(){ if(idx<songs.length-1) play(idx+1); else play(0); }
 function prev(){ if(idx>0) play(idx-1); }
 function toggleLike(el){ el.innerText=el.innerText==='♡'?'❤️':'♡'; }
 function toggleShuffle(){ let b=document.getElementById('shuffleBtn'); b.style.color=b.style.color==='rgb(255, 45, 85)'?'#fff':'#ff2d55'; }
 function toggleRepeat(){ let b=document.getElementById('repeatBtn'); audio.loop=!audio.loop; b.style.color=audio.loop?'#ff2d55':'#fff'; }
-audio.addEventListener('timeupdate',()=>{ if(audio.duration){ document.getElementById('progBar').style.width=(audio.currentTime/audio.duration*100)+'%'; document.getElementById('cur').innerText=fmt(audio.currentTime); document.getElementById('dur').innerText=fmt(audio.duration); } });
+audio.addEventListener('timeupdate',()=>{ if(audio.duration){ document.getElementById('progBar').style.width=(audio.currentTime/audio.duration*100)+'%'; document.getElementById('cur').innerText=fmt(audio.currentTime); document.getElementById('dur').innerText=fmt(audio.duration); }});
 audio.addEventListener('ended',()=>{ next(); });
-audio.addEventListener('error',()=>{ document.getElementById('pStatus').innerText='⚠️ Lagu ini gagal, lagi ganti ke lagu berikutnya...'; setTimeout(next,1000); });
+audio.addEventListener('error',()=>{
+  document.getElementById('pStatus').innerText='⚠️ Lagu ini gagal, lagi ganti ke lagu berikutnya...';
+  setTimeout(()=>{
+    if (audio.src !== FALLBACK_MP3) {
+      audio.src = FALLBACK_MP3;
+      audio.load();
+      audio.play().catch(()=>next());
+    } else {
+      next();
+    }
+  },1000);
+});
 cari('Mahalini');
 </script>
 </body></html>
